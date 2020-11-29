@@ -9,6 +9,8 @@ def read_file(input):
         file_col = file_input.readline()
         file_row = file_input.readline()
     
+    file_input.close()
+    
     #Split inicial de cada fila o columna
     ind_col = file_col.split(" ")
     ind_row = file_row.split(" ")
@@ -17,12 +19,23 @@ def read_file(input):
     for i in ind_col:
         col = i.strip()
         cols.append(col.split("|"))
+        for c in cols:
+            for c2 in range(len(c)):
+                c[c2] = int(c[c2])
+        #end for
+    #end for
         
     for i in ind_row:
         row = i.strip()
         rows.append(row.split("|"))
+        for r in rows:
+            for r2 in range(len(r)):
+                r[r2] = int(r[r2])
+            #end for
+    #end for
     
     return cols, rows
+#end def
 
 #La entrada inicial del tablero hay -1
 def solveNonogram_aux(M, positions,i,cols, rows):
@@ -55,24 +68,109 @@ def solveNonogram_aux(M, positions,i,cols, rows):
             return False
     #end if
 #end def
+def solveNonogram(col, rows):
+    M = [[-1 for j in range(len(rows))] for i in range(len(cols))]
+    positions = []
+    for i in range(len(cols)):
+        for j in range(len(rows)):
+            positions.append([i,j])
+    print(print(solveNonogram_aux(M,positions,0,cols,rows)))
+#Validación
+    #Convenciones:
+        #-1 no he puesto nada
+        #0 es negra
+        #1 es vacia
+def isValidNonogram(M,cols, rows):
+    #Verficar por columnas
+    is_valid_col = validate_col(M, cols)
+    #Verificar por filas
+    is_valid_row = validate_row(M, rows)
+    return is_valid_col and is_valid_row
+#end def 
+def validate_row(M, rows):
+    col_len = len(M[0])
+    for row in range(len(rows)):
+        ver = []
+        start = False
+        counter = 0
+        for col in range(col_len):
+            if M[row][col] == 0:
+                start = True
+                counter += 1    
+            elif M[row][col] == 1:
+                if start == True:
+                    ver.append(counter)
+                    counter = 0
+                    start = False
+            #end if
+        #end for
+        if start == True:
+            ver.append(counter)
+        #end if
+        if not validate_arrays(ver, rows[row]):
+            return False 
+        #end if
+    #end for              
+    return True
+#end def
+def validate_col(M, cols):
+    row_len = len(M)
+    for col in range(len(cols)):
+        ver = []
+        start = False
+        counter = 0
+        for row in range(row_len):
+            if M[row][col] == 0:
+                start = True
+                counter += 1    
+            elif M[row][col] == 1:
+                if start == True:
+                    ver.append(counter)
+                    counter = 0
+                    start = False
+        if start == True:
+            ver.append(counter)
+        if not validate_arrays(ver, cols[col]):
+            return False                
+    return True
+
+def validate_arrays(A, B):
+    if len(A) != len(B):
+        return False
+    for i in range(len(A)):
+        if A[i] != B[i]:
+            return False
+    return True
+
+def print_board(M):
+    for i in range(len(M[0])):
+        print()
+        for j in range(len(M)):
+            print(str(M[i][j]) + " ", end="")
+    print()
+#Salida a formato PGM
+def write_file(M, output):
+    with open(output, "w") as file_output:
+        file_output.write("P5\n")
+        file_output.write(str(len(M[0])) + " " + str(len(M)) + "\n")
+        file_output.write("255\n")
+        for row in range(len(M)):
+            for col in range(len(M[0])):
+                if M[row][col] == 0:
+                    file_output.write("0 ")
+                else:
+                    file_output.write("255 ")
+    file_output.close()
 
 if __name__ == "__main__":
     
-    if len(sys.argv) != 2:
-        print("Error. Se necesita un argumento con el input a leer!")
+    if len(sys.argv) != 3:
+        print("Error. Verifique que se tenga el file de entrada y salida!")
+        print("Sintaxis correcta: python3 nonogram.py input_name.txt output_name.ppm ")
     else:
+        M = [[0, -1, -1, -1, -1], [-1, -1, -1, -1, -1], [-1, -1, -1, -1, -1], [-1, -1, -1, -1, -1], [-1, -1, -1, -1, -1]]
+        print_board(M)
         cols, rows = read_file(sys.argv[1])
-        #Genero todas las posibles posibles combinaciones
-    
-#Validación
-#Convenciones:
-    #-1 no he puesto nada
-    #0 es negra
-    #1 es vacia
-def isValidNonogram(M,cols, rows):
-    #Casos que no son válidos
-        #1. Verificar números aislados, si no llegan a 0 no sirven
-        #2. Si llego a 0 y tengo un número siguiente, la siguiente casilla debe ser 0
-    #Verificar por filas        
-    #Verficar por columnas
-#Salida a formato PGM
+        solveNonogram(cols,rows)
+        print(isValidNonogram(M, cols, rows))
+        write_file(M, sys.argv[2])

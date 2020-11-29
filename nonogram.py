@@ -186,4 +186,4 @@ if __name__ == "__main__":
     cols, rows = read_file(sys.argv[1])
     #solveNonogram(cols,rows)
     print(isValidNonogram(M, cols, rows))
-    #write_file(M, sys.argv[2])
+    write_file(M, sys.argv[2])

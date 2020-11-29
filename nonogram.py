@@ -32,6 +32,7 @@ def read_file(input):
             for r2 in range(len(r)):
                 r[r2] = int(r[r2])
             #end for
+        #end for
     #end for
     
     return cols, rows
@@ -68,6 +69,7 @@ def solveNonogram_aux(M, positions,i,cols, rows):
             return False
     #end if
 #end def
+
 def solveNonogram(col, rows):
     M = [[-1 for j in range(len(rows))] for i in range(len(cols))]
     positions = []
@@ -75,6 +77,8 @@ def solveNonogram(col, rows):
         for j in range(len(rows)):
             positions.append([i,j])
     print(print(solveNonogram_aux(M,positions,0,cols,rows)))
+    
+    
 #Validación
     #Convenciones:
         #-1 no he puesto nada
@@ -87,6 +91,7 @@ def isValidNonogram(M,cols, rows):
     is_valid_row = validate_row(M, rows)
     return is_valid_col and is_valid_row
 #end def 
+
 def validate_row(M, rows):
     col_len = len(M[0])
     for row in range(len(rows)):
@@ -113,6 +118,7 @@ def validate_row(M, rows):
     #end for              
     return True
 #end def
+
 def validate_col(M, cols):
     row_len = len(M)
     for col in range(len(cols)):
@@ -135,10 +141,10 @@ def validate_col(M, cols):
     return True
 
 def validate_arrays(A, B):
-    if len(A) != len(B):
+    if len(A) > len(B):
         return False
     for i in range(len(A)):
-        if A[i] != B[i]:
+        if A[i] > B[i]:
             return False
     return True
 
@@ -148,6 +154,7 @@ def print_board(M):
         for j in range(len(M)):
             print(str(M[i][j]) + " ", end="")
     print()
+    
 #Salida a formato PGM
 def write_file(M, output):
     with open(output, "w") as file_output:
@@ -167,10 +174,16 @@ if __name__ == "__main__":
     if len(sys.argv) != 3:
         print("Error. Verifique que se tenga el file de entrada y salida!")
         print("Sintaxis correcta: python3 nonogram.py input_name.txt output_name.ppm ")
-    else:
-        M = [[0, -1, -1, -1, -1], [-1, -1, -1, -1, -1], [-1, -1, -1, -1, -1], [-1, -1, -1, -1, -1], [-1, -1, -1, -1, -1]]
-        print_board(M)
-        cols, rows = read_file(sys.argv[1])
-        solveNonogram(cols,rows)
-        print(isValidNonogram(M, cols, rows))
-        write_file(M, sys.argv[2])
+        exit()
+        
+    M = [[0, -1, -1, -1, -1], 
+         [-1, -1, -1, -1, -1], 
+         [-1, -1, -1, -1, -1], 
+         [-1, -1, -1, -1, -1], 
+         [-1, -1, -1, -1, -1]]
+    
+    print_board(M)
+    cols, rows = read_file(sys.argv[1])
+    #solveNonogram(cols,rows)
+    print(isValidNonogram(M, cols, rows))
+    #write_file(M, sys.argv[2])

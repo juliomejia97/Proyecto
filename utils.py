@@ -59,10 +59,6 @@ def calculateFitness(solution, rules,nRows,nCols):
     #end for
     return FO
                 
-        
-        
-
-
 #Lectura de archivo
 def read_file(input):
     
@@ -86,6 +82,7 @@ def read_file(input):
         for c in cols:
             for c2 in range(len(c)):
                 c[c2] = int(c[c2])
+            #end for
         #end for
     #end for
         
@@ -98,7 +95,6 @@ def read_file(input):
             #end for
         #end for
     #end for
-    
     return cols, rows
 #end def
 
@@ -107,7 +103,10 @@ def print_board(M):
         print()
         for j in range(len(M)):
             print(str(M[i][j]) + "\t", end="")
+        #end for
+    #end for
     print()
+#end def
 
 #Salida a formato PGM
 def write_file(M, output):
@@ -121,4 +120,8 @@ def write_file(M, output):
                     file_output.write("0 ")
                 else:
                     file_output.write("255 ")
+                #end if
+            #end for
+        #end for
     file_output.close()
+#end def

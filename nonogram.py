@@ -1,5 +1,5 @@
-import sys
 from utils import*
+import sys
 import numpy as ny
 import random as rnd
 class Game:
@@ -9,6 +9,7 @@ class Game:
         self.board = []
         # Decoding the solution of chromosome to a board of M[][]
         self.decodeChromosome(points, nRows, nCols)
+    #end def
 
     def decodeChromosome(self, points, nRows, nCols):
         for i in range(nRows):
@@ -24,41 +25,65 @@ class Game:
             aux = i//(nRows+1) if nRows!=nCols else i//nRows 
             self.board[aux][i % nCols] = points[i]
             i += 1
+        #end while
     # end def
+    
 # end class
+
 class Rules:
     def __init__(self, rows, cols):
         self.rows = rows
         self.cols = cols
+    #end def
+    
+#end class
 class Chromosome:
     def __init__(self, solution, rules, nRows, nCols):
         self.solution = solution
         self.fitness = calculateFitness(solution, rules, nRows, nCols)
+    #end def
 
     def recalculateFitness(self,rules, nRows,nCols):
         self.fitness = calculateFitness(self.solution, rules, nRows, nCols)
+    #end def
+    
 # end class
+
 def GeneticAlgorithm(constrains):
     rules, nRows, nCols, nPoints, populationSize, probMutation, elitism = constrains
     #Init Population
-    interations = 0
+    iterations = 1
+    localIterations = 0
+    localFO = 0
     Population = initSolutions(rules, nRows, nCols, populationSize)
+    
     while not converge(Population):
-        print("Generating the generation ==> ",interations)
+        localFO = Population[0].fitness
+        print("Generating the generation ==> ", iterations)
         #Cruzar
-        Childs = cross(Population,populationSize,nPoints, rules, nRows,nCols)
-            #Mutar
-        mutation(Childs,probMutation,rules,nRows,nCols)
-            #Escoger
+        Childs = cross(Population, populationSize, nPoints, rules, nRows, nCols)
+        #Mutar
+        mutation(Childs, probMutation, rules, nRows, nCols)
+        #Escoger
         Population =  partialElitism(Population,Childs,elitism,populationSize,rules,nRows,nCols)
         print(Population[0].fitness)
-        interations += 1
+        if localFO == Population[0].fitness:
+            localIterations += 1
+        
+        if localIterations == 50:
+            print("Initiating swap")
+            swap(Population, localFO)
+            localIterations = 0
+        
+        iterations += 1
+
     #end while
     return Game(nRows,nCols,Population[0].solution)
+#end def
 
 def initSolutions(rules, nRows, nCols, populationSize):
     Solutions = []
-    print("Initializating the population ==> with size: ", populationSize)
+    print("Initializing the population ==> with size: ", populationSize)
     for c in range(populationSize):
         newChromosome = []
         for i in range(nCols*nRows):
@@ -71,7 +96,9 @@ def initSolutions(rules, nRows, nCols, populationSize):
         C = Chromosome(newChromosome, rules, nRows, nCols)
         Solutions.append(C)
         # end for
+    #end for
     return Solutions
+#end def
 
 def converge(P):
     if P[0].fitness == 0:
@@ -99,27 +126,29 @@ def cross(P,tamPopulation,nPoints,rules,nRows,nCols):
             else:
                 child1.append(father2.solution[i])
                 child2.append(father1.solution[i])
+            #end if
+        #end for
         Childs.append(Chromosome(child1,rules,nRows,nCols))
         Childs.append(Chromosome(child2,rules,nRows,nCols))
     #end for
     return Childs
 #end def
 
-def mutation(Childs,probMutation,rules, nRows, nCols):
+def mutation(Childs, probMutation,rules, nRows, nCols):
     for child in Childs:
-        if rnd.random() >probMutation:
-            pos = ny.random.randint(0,len(child.solution)-1)
+        if rnd.random() < probMutation:
+            pos = ny.random.randint(0, len(child.solution) - 1)
             if(child.solution[pos]):
                 child.solution[pos] = False
             else:
                 child.solution[pos] = True
             #end if
-            child.recalculateFitness(rules,nRows,nCols)
+            child.recalculateFitness(rules, nRows, nCols)
         #end if
     #end for
 #end def
 
-def partialElitism(P,C,elitism, nPopulation,rules, nRows,nCols):
+def partialElitism(P,C,elitism, nPopulation, rules, nRows,nCols):
     unifided = P + C
     unifided.sort(key = lambda s: s.fitness,reverse = False)
     contPopulation = int(elitism*nPopulation)
@@ -127,7 +156,15 @@ def partialElitism(P,C,elitism, nPopulation,rules, nRows,nCols):
     others = unifided[contPopulation:]
     nextPopulation = bests + ny.ndarray.tolist(ny.random.choice(others,size = nPopulation - contPopulation,replace=False))
     return nextPopulation
-    
+#end def
+
+def swap(P, localFO):
+    for i in range(len(P)):
+        if P[i].fitness == localFO:
+            P[i].solution = P[i].solution[len(P[i].solution) // 2:] + P[i].solution[:len(P[i].solution) // 2]
+        #end if
+    #end for
+#end def
     
 def createConstraints(rules, nPopulation, probMutation, elitism):
     nRows = len(rules.rows)
@@ -135,6 +172,7 @@ def createConstraints(rules, nPopulation, probMutation, elitism):
     nPoints = nRows*nCols
     #Numero de puntos que hay que pintar en el nonograma
     return (rules, nRows, nCols, nPoints, nPopulation,probMutation,elitism)
+#end def
 
 if __name__ == "__main__":
 

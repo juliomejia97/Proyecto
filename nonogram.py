@@ -2,8 +2,6 @@ import sys
 from utils import*
 import numpy as ny
 import random as rnd
-
-
 class Game:
     def __init__(self, nRows, nCols, points):
         self.nRows = nRows
@@ -22,7 +20,9 @@ class Game:
         # end for
         i = 0
         while i < len(points):
-            self.board[i//nRows][i % nCols] = points[i]
+            #print(i//nRows," ",i%nCols)
+            aux = i//(nRows+1) if nRows!=nCols else i//nRows 
+            self.board[aux][i % nCols] = points[i]
             i += 1
     # end def
 # end class
@@ -34,11 +34,27 @@ class Chromosome:
     def __init__(self, solution, rules, nRows, nCols):
         self.solution = solution
         self.fitness = calculateFitness(solution, rules, nRows, nCols)
-        print(self.fitness)
+
+    def recalculateFitness(self,rules, nRows,nCols):
+        self.fitness = calculateFitness(self.solution, rules, nRows, nCols)
 # end class
 def GeneticAlgorithm(constrains):
-    rules, nRows, nCols, nPoints, populationSize = constrains
+    rules, nRows, nCols, nPoints, populationSize, probMutation, elitism = constrains
+    #Init Population
+    interations = 0
     Population = initSolutions(rules, nRows, nCols, populationSize)
+    while not converge(Population):
+        print("Generating the generation ==> ",interations)
+        #Cruzar
+        Childs = cross(Population,populationSize,nPoints, rules, nRows,nCols)
+            #Mutar
+        mutation(Childs,probMutation,rules,nRows,nCols)
+            #Escoger
+        Population =  partialElitism(Population,Childs,elitism,populationSize,rules,nRows,nCols)
+        print(Population[0].fitness)
+        interations += 1
+    #end while
+    return Game(nRows,nCols,Population[0].solution)
 
 def initSolutions(rules, nRows, nCols, populationSize):
     Solutions = []
@@ -52,29 +68,86 @@ def initSolutions(rules, nRows, nCols, populationSize):
             else:
                 newChromosome.append(False)
             # end if
-        print(newChromosome)
         C = Chromosome(newChromosome, rules, nRows, nCols)
         Solutions.append(C)
         # end for
     return Solutions
-def createConstraints(rules, nPopulation):
+
+def converge(P):
+    if P[0].fitness == 0:
+        return True
+    return False
+
+#TODO: Mejorar el cross
+def cross(P,tamPopulation,nPoints,rules,nRows,nCols):
+    
+    Childs = []
+    P.sort(key = lambda s: s.fitness,reverse = False)
+    #Calcular el número de parejas
+    sumFitness = sum(c.fitness for c in P)
+    #TODO: Prob de padres 
+    prob = [(i.fitness/sumFitness) for i in P]
+    for p in range(tamPopulation//2):
+        child1 = []
+        child2 = []
+        father1, father2 = ny.random.choice(P,p=prob,replace=False,size=2)
+        for i in range(len(father1.solution)):
+            #El hijo 1 hereda al mitad del p1 y la otra mitad del p2
+            if(rnd.random() < 0.5):
+                child1.append(father1.solution[i])
+                child2.append(father2.solution[i])
+            else:
+                child1.append(father2.solution[i])
+                child2.append(father1.solution[i])
+        Childs.append(Chromosome(child1,rules,nRows,nCols))
+        Childs.append(Chromosome(child2,rules,nRows,nCols))
+    #end for
+    return Childs
+#end def
+
+def mutation(Childs,probMutation,rules, nRows, nCols):
+    for child in Childs:
+        if rnd.random() >probMutation:
+            pos = ny.random.randint(0,len(child.solution)-1)
+            if(child.solution[pos]):
+                child.solution[pos] = False
+            else:
+                child.solution[pos] = True
+            #end if
+            child.recalculateFitness(rules,nRows,nCols)
+        #end if
+    #end for
+#end def
+
+def partialElitism(P,C,elitism, nPopulation,rules, nRows,nCols):
+    unifided = P + C
+    unifided.sort(key = lambda s: s.fitness,reverse = False)
+    contPopulation = int(elitism*nPopulation)
+    bests = unifided[:contPopulation]
+    others = unifided[contPopulation:]
+    nextPopulation = bests + ny.ndarray.tolist(ny.random.choice(others,size = nPopulation - contPopulation,replace=False))
+    return nextPopulation
+    
+    
+def createConstraints(rules, nPopulation, probMutation, elitism):
     nRows = len(rules.rows)
     nCols = len(rules.cols)
-    nPoints = 0
+    nPoints = nRows*nCols
     #Numero de puntos que hay que pintar en el nonograma
-    for i in rules.rows:
-        for j in i:
-            nPoints += j
-    return (rules, nRows, nCols, nPoints, nPopulation)
+    return (rules, nRows, nCols, nPoints, nPopulation,probMutation,elitism)
 
 if __name__ == "__main__":
 
-    if len(sys.argv) != 4:
+    if len(sys.argv) != 6:
         print("Error. Verifique que se tenga el file de entrada y salida!")
-        print("Sintaxis correcta: python3 nonogram.py nPopulation input_name.txt output_name.ppm ")
+        print("Sintaxis correcta: python3 nonogram.py nPopulation probMutation elitsmPercentage input_name.txt output_name.ppm ")
         exit()
 
-    cols, rows = read_file(sys.argv[2])
+    cols, rows = read_file(sys.argv[4])
     rules = Rules(rows, cols)
-    constraints = createConstraints(rules,int(sys.argv[1]))
-    GeneticAlgorithm(constraints)
+    constraints = createConstraints(rules,int(sys.argv[1]),float(sys.argv[2]),float(sys.argv[3]))
+    print(constraints)
+    GameSolved = GeneticAlgorithm(constraints)
+    print_board(GameSolved.board)
+    write_file(GameSolved.board,sys.argv[5])
+    

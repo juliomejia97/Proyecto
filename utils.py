@@ -5,7 +5,6 @@ import sys
 def calculateFitness(solution, rules,nRows,nCols):
     #Contar cuántas pistas se están cumpliento
     FO = 0
-    game = ng.Game(nRows,nCols,solution)
     solEvaluate = solution
     
     #Contar reglas que se cumplen en filas
@@ -58,7 +57,7 @@ def calculateFitness(solution, rules,nRows,nCols):
             indexR +=1
         #end while
     #end for
-    return 1/FO if FO!=0 else 0
+    return FO
                 
         
         
@@ -118,7 +117,7 @@ def write_file(M, output):
         file_output.write("255\n")
         for row in range(len(M)):
             for col in range(len(M[0])):
-                if M[row][col] == 0:
+                if M[row][col] == True:
                     file_output.write("0 ")
                 else:
                     file_output.write("255 ")

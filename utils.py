@@ -13,10 +13,13 @@ def calculateFitness(solution, rules,nRows,nCols):
         nReglas = len(rules.rows[i])
         columnIndex = 0
         indexR = 0
-        
-        while columnIndex < nCols and indexR < nReglas:
+        while columnIndex < nCols or indexR < nReglas:
             contP = 0
-            reglaActual = rules.rows[i][indexR]
+            #Si no tengo más reglas en mi solución
+            if (indexR  < nReglas):
+                reglaActual = rules.rows[i][indexR]
+            else:
+                reglaActual = 0
             #Verificar espacios
             while columnIndex < nCols and not solEvaluate[i*nCols + columnIndex]:
                 columnIndex +=1
@@ -36,9 +39,12 @@ def calculateFitness(solution, rules,nRows,nCols):
         nReglas = len(rules.cols[j])
         rowIndex = 0
         indexR = 0
-        while rowIndex < nRows and indexR  < nReglas:
+        while rowIndex < nRows or indexR  < nReglas:
             contP = 0
-            reglaActual = rules.cols[j][indexR]
+            if (indexR  < nReglas):
+                reglaActual = rules.cols[j][indexR]
+            else:
+                reglaActual = 0
             #Verficar Espacios
             while rowIndex < nRows and not solEvaluate[rowIndex*nRows + j]:
                 rowIndex +=1
@@ -101,7 +107,7 @@ def print_board(M):
     for i in range(len(M[0])):
         print()
         for j in range(len(M)):
-            print(str(M[i][j]) + " ", end="")
+            print(str(M[i][j]) + "\t", end="")
     print()
 
 #Salida a formato PGM

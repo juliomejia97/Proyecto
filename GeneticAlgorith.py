@@ -3,19 +3,15 @@ import sys
 import random as rnd
 from utils import calculateFitness
 class Chromosome:
-    def __init___(self,solution, constrains):
+    def __init___(self,solution, rules,nRows,nCols):
         self.solution = solution
-        #TODO: Acá se calcula el fitness del chormosoma
-        self.fitness = calculateFitness(solution, constrains)
+        self.fitness = calculateFitness(solution,rules,nRows,nCols)
 
 def GeneticAlgorithm(constrains):
     rules, nRows, nCols, nPoints, populationSize = constrains
-    Population = initSolutions(constrains)
+    Population = initSolutions(rules, nRows,nCols,populationSize)
 
-
-
-def initSolutions(constrains):
-    rules, nRows, nCols, nPoints, populationSize = constrains
+def initSolutions(rules, nRows, nCols, populationSize):
     Solutions = []
     print("Initializating the population ==> with size: ",populationSize)
     for c in range(populationSize):
@@ -27,6 +23,6 @@ def initSolutions(constrains):
             else:
                 newChromosome.append(False)
             #end if
-        Solutions.append(Chromosome(newChromosome,constrains))
+        Solutions.append(Chromosome(newChromosome,rules, nRows, nCols))
         #end for
     return Solutions

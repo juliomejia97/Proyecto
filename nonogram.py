@@ -43,6 +43,10 @@ def solveNonogram_aux(M, positions,i,cols, rows):
     if i == len(positions):
         return isValidNonogram(M, cols, rows)
     else:
+        print("Iteracion i: ",i,)
+        print("----------------------")
+        print_board(M)
+        print("----------------------")
         p = positions[i]
         v = 0
         stop = False
@@ -65,7 +69,7 @@ def solveNonogram_aux(M, positions,i,cols, rows):
         if stop:
             return True
         else:
-            M[p[0]][p[1]] = 0
+            M[p[0]][p[1]] = 1
             return False
     #end if
 #end def
@@ -73,10 +77,12 @@ def solveNonogram_aux(M, positions,i,cols, rows):
 def solveNonogram(col, rows):
     M = [[-1 for j in range(len(rows))] for i in range(len(cols))]
     positions = []
-    for i in range(len(cols)):
-        for j in range(len(rows)):
+    for i in range(len(rows)):
+        for j in range(len(cols)):
             positions.append([i,j])
-    print(print(solveNonogram_aux(M,positions,0,cols,rows)))
+    print(positions)
+    print(solveNonogram_aux(M,positions,0,cols,rows))
+    print_board(M)
     
     
 #Validación
@@ -176,14 +182,14 @@ if __name__ == "__main__":
         print("Sintaxis correcta: python3 nonogram.py input_name.txt output_name.ppm ")
         exit()
         
-    M = [[0, -1, -1, -1, -1], 
-         [-1, -1, -1, -1, -1], 
-         [-1, -1, -1, -1, -1], 
-         [-1, -1, -1, -1, -1], 
-         [-1, -1, -1, -1, -1]]
+    M = [[0, 0, 0, 1, 1], 
+         [1, 1, 1, 0, 0], 
+         [1, 1, 0, 1, 0], 
+         [1, 1, 1, 1, 0], 
+         [1, 1, 0, 1, 1]]
     
     print_board(M)
     cols, rows = read_file(sys.argv[1])
-    #solveNonogram(cols,rows)
+    solveNonogram(cols,rows)
     print(isValidNonogram(M, cols, rows))
     write_file(M, sys.argv[2])
